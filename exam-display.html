@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Display System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #001a33 0%, #003366 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(0, 17, 34, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .date-time-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+            font-weight: 700;
+        }
+
+        .date, .clock {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .clock {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.1em;
+            background: linear-gradient(135deg, #76FF03, #64DD17);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .navigation a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .navigation a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .navigation a.active {
+            background: linear-gradient(135deg, #76FF03, #64DD17);
+            box-shadow: 0 5px 20px rgba(118, 255, 3, 0.4);
+        }
+
+        /* Container Styles */
+        .main-container {
+            flex: 1;
+            width: 100%;
+            padding: 1.5rem;
+        }
+
+        .centre-number-wrapper {
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .centre-number-wrapper label {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #90CAF9;
+            white-space: nowrap;
+        }
+
+        .centre-number-wrapper input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            font-size: 1.6rem;
+            font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .centre-number-wrapper input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Exam Container Styles */
+        .exam-container {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .exam-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exam-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .exam-section:hover::before {
+            transform: translateX(0);
+        }
+
+        .exam-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .exam-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            color: #90CAF9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .exam-title::before {
+            content: '📝';
+            font-size: 1.6rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #B3E5FC;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            font-size: 1.8rem;
+            font-weight: 500;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Time Input Styles */
+        .time-input-group {
+            position: relative;
+            margin-bottom: 1.2rem;
+        }
+
+        .time-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-input-wrapper:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .time-label {
+            font-size: 1.7rem;
+            font-weight: 700;
+            min-width: 140px;
+            transition: color 0.3s ease;
+        }
+
+        .time-label.active-start {
+            color: #76FF03;
+            text-shadow: 0 0 10px rgba(118, 255, 3, 0.5);
+        }
+
+        .time-label.active-finish,
+        .time-label.active-extra {
+            color: #f44336;
+            text-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+        }
+
+        .time-input-wrapper input[type="time"] {
+            flex: 1;
+            padding: 0.6rem;
+            font-size: 2rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .time-input-wrapper input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+        }
+
+        .time-icon {
+            font-size: 1.6rem;
+            opacity: 0.7;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #666;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .status-indicator.not-started {
+            background: #666;
+        }
+
+        .status-indicator.in-progress {
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.finishing {
+            background: #ff9800;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-indicator.finished {
+            background: #f44336;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 currentColor;
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .date-time-wrapper {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .navigation {
+                justify-content: center;
+            }
+
+            .exam-container {
+                grid-template-columns: 1fr;
+            }
+
+            .time-input-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .time-label {
+                min-width: auto;
+            }
+        }
+
+        /* Additional Visual Enhancements */
+        .info-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .time-input-wrapper:hover .info-tooltip {
+            opacity: 1;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="date-time-wrapper">
+                <div class="date" id="date"></div>
+                <div class="clock" id="clock"></div>
+            </div>
+            <nav class="navigation" id="navigation">
+                <a href="#single" data-page="single" class="active">
+                    <span>📄</span> Single Exam
+                </a>
+                <a href="#dual" data-page="dual">
+                    <span>📑</span> Dual Exam
+                </a>
+                <a href="#triple" data-page="triple">
+                    <span>📚</span> Triple Exam
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="centre-number-wrapper">
+            <label for="centreNumber">Centre Number</label>
+            <input type="text" id="centreNumber" name="centreNumber" placeholder="Enter centre number...">
+        </div>
+
+        <div class="exam-container" id="examContainer">
+            <!-- Exam sections will be dynamically generated here -->
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentPage = 'single';
+        let examData = {};
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNavigation();
+            startClock();
+            updateDate();
+            renderPage(currentPage);
+            loadSavedData();
+        });
+
+        // Navigation functionality
+        function initializeNavigation() {
+            const navLinks = document.querySelectorAll('.navigation a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.dataset.page;
+                    setActivePage(page);
+                    renderPage(page);
+                });
+            });
+        }
+
+        function setActivePage(page) {
+            currentPage = page;
+            document.querySelectorAll('.navigation a').forEach(link => {
+                link.classList.toggle('active', link.dataset.page === page);
+            });
+        }
+
+        // Clock functionality
+        function startClock() {
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            // Check time matches for all exams
+            checkAllTimeMatches(`${hours}:${minutes}`);
+        }
+
+        function updateDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date').textContent = now.toLocaleDateString('en-GB', options);
+        }
+
+        // Page rendering
+        function renderPage(page) {
+            const container = document.getElementById('examContainer');
+            container.innerHTML = '';
+
+            const examCount = page === 'single' ? 1 : page === 'dual' ? 2 : 3;
+            
+            for (let i = 1; i <= examCount; i++) {
+                container.appendChild(createExamSection(i, examCount));
+            }
+
+            // Restore saved data
+            setTimeout(() => restoreExamData(), 100);
+        }
+
+        function createExamSection(examNumber, totalExams) {
+            const section = document.createElement('div');
+            section.className = 'exam-section';
+            section.innerHTML = `
+                <div class="status-indicator not-started" id="status-${examNumber}"></div>
+                <h2 class="exam-title">Exam ${totalExams > 1 ? examNumber : ''}</h2>
+                
+                <div class="form-group">
+                    <label for="examBoard${examNumber}">Exam Board</label>
+                    <input type="text" id="examBoard${examNumber}" placeholder="e.g., AQA, OCR, Edexcel...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="exam${examNumber}">Exam Name</label>
+                    <input type="text" id="exam${examNumber}" placeholder="e.g., Mathematics Paper 1...">
+                </div>
+                
+                <div class="time-input-group">
+                    <div class="time-input-wrapper" onclick="openTimePicker('start${examNumber}')">
+                        <div class="info-tooltip">Click to set start time</div>
+                        <label class="time-label" id="startLabel${examNumber}">START</label>
+                        <input type="time" id="start${examNumber}">
+                        <span class="time-icon">⏰</span>
+                    </div>
+                </div>
+                
+                <div class="time-input-group">
+                    <div class="time-input-wrapper" onclick="openTimePicker('finish${examNumber}')">
+                        <div class="info-tooltip">Click to set finish time</div>
+                        <label class="time-label" id="finishLabel${examNumber}">FINISH</label>
+                        <input type="time" id="finish${examNumber}">
+                        <span class="time-icon">⏱️</span>
+                    </div>
+                </div>
+                
+                <div class="time-input-group">
+                    <div class="time-input-wrapper" onclick="openTimePicker('extraTime${examNumber}')">
+                        <div class="info-tooltip">Click to set extra time finish</div>
+                        <label class="time-label" id="extraTimeLabel${examNumber}">EXTRA TIME</label>
+                        <input type="time" id="extraTime${examNumber}">
+                        <span class="time-icon">⏲️</span>
+                    </div>
+                </div>
+            `;
+
+            // Add input event listeners for auto-save
+            section.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', saveData);
+            });
+
+            return section;
+        }
+
+        // Time picker functionality
+        function openTimePicker(inputId) {
+            const input = document.getElementById(inputId);
+            if (input && input.showPicker) {
+                input.showPicker();
+            }
+        }
+
+        // Time checking functionality
+        function checkAllTimeMatches(currentTime) {
+            const examCount = currentPage === 'single' ? 1 : currentPage === 'dual' ? 2 : 3;
+            
+            for (let i = 1; i <= examCount; i++) {
+                checkTimeMatch(currentTime, i);
+            }
+        }
+
+        function checkTimeMatch(currentTime, examNumber) {
+            const startInput = document.getElementById(`start${examNumber}`);
+            const finishInput = document.getElementById(`finish${examNumber}`);
+            const extraTimeInput = document.getElementById(`extraTime${examNumber}`);
+            
+            const startLabel = document.getElementById(`startLabel${examNumber}`);
+            const finishLabel = document.getElementById(`finishLabel${examNumber}`);
+            const extraTimeLabel = document.getElementById(`extraTimeLabel${examNumber}`);
+            
+            const statusIndicator = document.getElementById(`status-${examNumber}`);
+
+            if (!startInput || !finishInput || !extraTimeInput) return;
+
+            const startTime = startInput.value;
+            const finishTime = finishInput.value;
+            const extraTime = extraTimeInput.value;
+
+            // Reset all labels
+            startLabel.className = 'time-label';
+            finishLabel.className = 'time-label';
+            extraTimeLabel.className = 'time-label';
+            statusIndicator.className = 'status-indicator not-started';
+
+            if (startTime && isTimeGreaterOrEqual(currentTime, startTime)) {
+                startLabel.className = 'time-label active-start';
+                statusIndicator.className = 'status-indicator in-progress';
+
+                if (finishTime && isTimeGreaterOrEqual(currentTime, finishTime)) {
+                    finishLabel.className = 'time-label active-finish';
+                    statusIndicator.className = 'status-indicator finishing';
+
+                    if (extraTime && isTimeGreaterOrEqual(currentTime, extraTime)) {
+                        extraTimeLabel.className = 'time-label active-extra';
+                        statusIndicator.className = 'status-indicator finished';
+                    }
+                }
+            }
+        }
+
+        function isTimeGreaterOrEqual(currentTime, inputTime) {
+            if (!currentTime || !inputTime) return false;
+            
+            const [currentHours, currentMinutes] = currentTime.split(':').map(Number);
+            const [inputHours, inputMinutes] = inputTime.split(':').map(Number);
+            
+            const currentTotalMinutes = currentHours * 60 + currentMinutes;
+            const inputTotalMinutes = inputHours * 60 + inputMinutes;
+            
+            return currentTotalMinutes >= inputTotalMinutes;
+        }
+
+        // Data persistence
+        function saveData() {
+            const data = {
+                centreNumber: document.getElementById('centreNumber').value,
+                currentPage: currentPage,
+                exams: {}
+            };
+
+            const examCount = currentPage === 'single' ? 1 : currentPage === 'dual' ? 2 : 3;
+            
+            for (let i = 1; i <= examCount; i++) {
+                data.exams[i] = {
+                    board: document.getElementById(`examBoard${i}`)?.value || '',
+                    name: document.getElementById(`exam${i}`)?.value || '',
+                    start: document.getElementById(`start${i}`)?.value || '',
+                    finish: document.getElementById(`finish${i}`)?.value || '',
+                    extraTime: document.getElementById(`extraTime${i}`)?.value || ''
+                };
+            }
+
+            localStorage.setItem('examDisplayData', JSON.stringify(data));
+        }
+
+        function loadSavedData() {
+            const savedData = localStorage.getItem('examDisplayData');
+            if (savedData) {
+                examData = JSON.parse(savedData);
+                
+                // Restore centre number
+                const centreInput = document.getElementById('centreNumber');
+                if (centreInput && examData.centreNumber) {
+                    centreInput.value = examData.centreNumber;
+                }
+
+                // Set the saved page
+                if (examData.currentPage) {
+                    setActivePage(examData.currentPage);
+                    renderPage(examData.currentPage);
+                }
+            }
+        }
+
+        function restoreExamData() {
+            if (!examData.exams) return;
+
+            const examCount = currentPage === 'single' ? 1 : currentPage === 'dual' ? 2 : 3;
+            
+            for (let i = 1; i <= examCount; i++) {
+                const exam = examData.exams[i];
+                if (exam) {
+                    const boardInput = document.getElementById(`examBoard${i}`);
+                    const nameInput = document.getElementById(`exam${i}`);
+                    const startInput = document.getElementById(`start${i}`);
+                    const finishInput = document.getElementById(`finish${i}`);
+                    const extraTimeInput = document.getElementById(`extraTime${i}`);
+
+                    if (boardInput) boardInput.value = exam.board || '';
+                    if (nameInput) nameInput.value = exam.name || '';
+                    if (startInput) startInput.value = exam.start || '';
+                    if (finishInput) finishInput.value = exam.finish || '';
+                    if (extraTimeInput) extraTimeInput.value = exam.extraTime || '';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
